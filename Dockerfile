@@ -1,29 +1,31 @@
 
+# The base image used is python:3.11
 FROM python:3.11
 
+# Setting PYTHONUNBUFFERED environment variable to 1
 ENV PYTHONUNBUFFERED=1
 
+# Setting the working directory to /app
 WORKDIR /app
 
-RUN python3 -m pip install --upgrade pip "poetry==1.5.1" 
 # Upgrading pip and installing poetry package manager
-# The error in the original Dockerfile is that poetry version is not specified, so a specific version (1.5.1) is installed.
+# Fixed typo in the command "PythonCOPY". Changed it to "COPY"
+RUN python3 -m pip install --upgrade pip "poetry==1.5.1" 
 
-RUN poetry config virtualenvs.create false --local 
 # Disabling virtualenv creation, so the installed packages are available in the system
+RUN poetry config virtualenvs.create false --local 
 
- PythonCOPY environment pyproject.toml poetry.lock ./
 # Copying the project's dependency files to the container
+COPY pyproject.toml poetry.lock ./
 
-RUN poetry install
 # Installing project dependencies using poetry
+RUN poetry install
 
-COPY mysite . 
 # Copying the project files to the container
+COPY mysite . 
 
-EXPOSE 8000  
 # Exposing port 8000 for the application to listen to incoming requests
-# The error in the original Dockerfile is that it doesn't explicitly expose any ports
+EXPOSE 8000  
 
-CMD ["gunicorn", "mysite.wsgi:application", "--bind", "0.0.0.0:8000"]
 # Running the command to start the application using gunicorn with the specified binding
+CMD ["gunicorn", "mysite.wsgi:application", "--bind", "0.0.0.0:8000"]
